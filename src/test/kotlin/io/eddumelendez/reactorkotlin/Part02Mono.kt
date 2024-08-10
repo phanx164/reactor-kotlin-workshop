@@ -17,7 +17,7 @@ class Part02Mono {
 
     // TODO Return an empty Mono
     fun emptyMono(): Mono<String> {
-        return null!!
+        return Mono.empty()
     }
 
     @Test
@@ -33,7 +33,7 @@ class Part02Mono {
 
     // TODO Return an Mono that never emit any signal
     fun monoWithNoSignal(): Mono<String> {
-        return null!!
+        return Mono.never()
     }
 
     @Test
@@ -46,7 +46,7 @@ class Part02Mono {
 
     // TODO Create a Mono that emits an IllegalStateException
     fun errorMono(): Mono<String> {
-        return null!!
+        return Mono.error(IllegalStateException())
     }
 
 }

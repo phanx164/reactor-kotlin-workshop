@@ -9,7 +9,14 @@ import org.junit.Assert.assertFalse
 import org.junit.Test
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.SynchronousSink
+import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.test.test
+import reactor.util.function.Tuple2
+import reactor.util.function.Tuples
+import java.util.concurrent.CountDownLatch
+
 
 class Part11BlockingToReactive {
 
@@ -25,7 +32,8 @@ class Part11BlockingToReactive {
 
     // TODO Create a Flux for reading all users from the blocking repository deferred until the flux is subscribed, and run it with an elastic scheduler
     fun blockingRepositoryToFlux(repository: BlockingRepository<User>): Flux<User> {
-        return null!!
+        return Flux.defer { repository.findAll().toFlux() }
+          .subscribeOn(Schedulers.boundedElastic())
     }
 
     @Test
@@ -46,7 +54,32 @@ class Part11BlockingToReactive {
 
     // TODO Insert users contained in the Flux parameter in the blocking repository using an elastic scheduler and return a Mono<Void> that signal the end of the operation
     fun fluxToBlockingRepository(flux: Flux<User>, repository: BlockingRepository<User>): Mono<Void> {
-        return null!!
+        return flux.log()
+          .publishOn(Schedulers.boundedElastic())
+          .doOnNext{ repository.save(it) }
+          .then()
     }
-
+    @Test
+    @Throws(Exception::class)
+    fun testRetry(){
+        val fibonacciGenerator = Flux.generate(
+          { Tuples.of(0L, 1L) },
+          { state: Tuple2<Long, Long>, sink: SynchronousSink<Long> ->
+            if (state.t1 < 0) throw RuntimeException("Value out of bounds") else sink.next(state.t1)
+            Tuples.of(state.t2, state.t1 + state.t2)
+          }
+        )
+        val countDownLatch = CountDownLatch(1)
+        fibonacciGenerator
+          .retry(1)
+          .subscribe(
+            { x: Long -> println(x) },
+            { e: Throwable ->
+              println("received :$e")
+              countDownLatch.countDown()
+            },
+            { countDownLatch.countDown() }
+          )
+        countDownLatch.await()
+    }
 }

@@ -37,11 +37,11 @@ class ReactiveUserRepository : ReactiveRepository<User> {
     }
 
     override fun save(publisher: Publisher<User>): Mono<Void> {
-        return withDelay(Flux.from(publisher)).doOnNext({ u -> this.users.add(u) }).then()
+        return withDelay(Flux.from(publisher)).doOnNext { u -> this.users.add(u) }.then()
     }
 
     override fun findFirst(): Mono<User> {
-        return withDelay(users.get(0).toMono())
+        return withDelay(users[0].toMono())
     }
 
     override fun findAll(): Flux<User> {
@@ -50,14 +50,14 @@ class ReactiveUserRepository : ReactiveRepository<User> {
 
     override fun findById(id: String): Mono<User> {
         val user = users.stream()
-                .filter({ p -> p.username == id})
-                .findFirst()
-                .orElseThrow({ IllegalArgumentException("No user with username $id found!")})
+                .filter { p -> p.username == id}
+          .findFirst()
+                .orElseThrow { IllegalArgumentException("No user with username $id found!")}
         return withDelay(user.toMono())
     }
 
     fun withDelay(userMono: Mono<User>) : Mono<User> {
-        return Mono.delay(Duration.ofMillis(delayInMs)).flatMap({ userMono })
+        return Mono.delay(Duration.ofMillis(delayInMs)).flatMap { userMono }
     }
 
     fun withDelay(userFlux: Flux<User>): Flux<User> {

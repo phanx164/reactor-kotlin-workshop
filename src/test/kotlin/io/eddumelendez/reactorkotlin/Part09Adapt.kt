@@ -2,12 +2,15 @@ package io.eddumelendez.reactorkotlin
 
 import io.eddumelendez.reactorkotlin.domain.User
 import io.eddumelendez.reactorkotlin.repository.ReactiveUserRepository
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.Single
 import org.junit.Test
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.adapter.rxjava.*
+import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
 import java.util.concurrent.CompletableFuture
 
@@ -26,12 +29,12 @@ class Part09Adapt {
 
     // TODO Adapt Flux to RxJava Flowable
     fun fromFluxToFlowable(flux: Flux<User>): Flowable<User> {
-        return null!!
+        return Flowable.fromPublisher(flux)
     }
 
     // TODO Adapt RxJava Flowable to Flux
     fun fromFlowableToFlux(flowable: Flowable<User>): Flux<User> {
-        return null!!
+        return Flux.from(flowable)
     }
 
     @Test
@@ -45,12 +48,12 @@ class Part09Adapt {
 
     // TODO Adapt Flux to RxJava Observable
     fun fromFluxToObservable(flux: Flux<User>): Observable<User> {
-        return null!!
+        return Observable.fromPublisher(flux)
     }
 
     // TODO Adapt RxJava Observable to Flux
     fun fromObservableToFlux(observable: Observable<User>): Flux<User> {
-        return null!!
+        return Flux.from(observable.toFlowable(BackpressureStrategy.BUFFER))
     }
 
     @Test
@@ -64,12 +67,12 @@ class Part09Adapt {
 
     // TODO Adapt Mono to RxJava Single
     fun fromMonoToSingle(mono: Mono<User>): Single<User> {
-        return null!!
+        return Single.fromPublisher( mono )
     }
 
     // TODO Adapt RxJava Single to Mono
     fun fromSingleToMono(single: Single<User>): Mono<User> {
-        return null!!
+        return Mono.from(single.toFlowable())
     }
 
     @Test
@@ -83,12 +86,12 @@ class Part09Adapt {
 
     // TODO Adapt Mono to Java 8+ CompletableFuture
     fun fromMonoToCompletableFuture(mono: Mono<User>): CompletableFuture<User> {
-        return null!!
+        return mono.toFuture()
     }
 
     // TODO Adapt Java 8+ CompletableFuture to Mono
     fun fromCompletableFutureToMono(future: CompletableFuture<User>): Mono<User> {
-        return null!!
+        return Mono.fromFuture(future)
     }
 
 }
